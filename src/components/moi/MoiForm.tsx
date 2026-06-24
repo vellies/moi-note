@@ -10,6 +10,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
 import { VoiceInput } from './VoiceInput';
+import { AIVoiceInput } from './AIVoiceInput';
 import { useLang } from '@/contexts/LangContext';
 import { t, paymentModeLabels } from '@/lib/i18n';
 import { Loader2 } from 'lucide-react';
@@ -44,10 +45,14 @@ export function MoiForm({ defaultValues, onSubmit, loading, onCancel }: Props) {
         <Input
           placeholder={placeholder}
           {...register(field)}
-          className="pr-10"
+          className="pr-20"
         />
-        <div className="absolute right-2">
+        <div className="absolute right-2 flex items-center gap-0.5">
           <VoiceInput
+            lang={voiceLang}
+            onResult={(text) => setValue(field, text as never)}
+          />
+          <AIVoiceInput
             lang={voiceLang}
             onResult={(text) => setValue(field, text as never)}
           />
