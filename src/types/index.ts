@@ -29,6 +29,7 @@ export interface IFunction {
   venue: string;
   notes?: string;
   createdAt: string;
+  deletedAt?: string;
   totalAmount?: number;
   entryCount?: number;
 }

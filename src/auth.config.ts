@@ -20,5 +20,12 @@ export const authConfig: NextAuthConfig = {
       }
       return true;
     },
+    session({ session, token }) {
+      if (session.user) {
+        (session.user as { id?: string; role?: string }).id = token.sub as string;
+        (session.user as { role?: string }).role = (token as { role?: string }).role;
+      }
+      return session;
+    },
   },
 };

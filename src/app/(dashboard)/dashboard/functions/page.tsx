@@ -10,7 +10,7 @@ export default async function FunctionsPage() {
 
   await connectDB();
   const isAdmin = (session.user as { role?: string }).role === 'admin';
-  const query = isAdmin ? {} : { userId: session.user.id };
+  const query = isAdmin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null };
   const functions = await FunctionModel.find(query).sort({ createdAt: -1 }).lean();
 
   const enriched = await Promise.all(

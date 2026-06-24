@@ -2,13 +2,19 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { formatCurrency, formatDate, functionTypeIcons } from '@/lib/utils';
 import { functionTypeLabels } from '@/lib/i18n';
 import { useLang } from '@/contexts/LangContext';
 import type { IFunction } from '@/types';
-import { CalendarDays, MapPin, IndianRupee, Users } from 'lucide-react';
+import { CalendarDays, MapPin, IndianRupee, Users, Trash2 } from 'lucide-react';
 
-export function FunctionCard({ fn }: { fn: IFunction }) {
+interface Props {
+  fn: IFunction;
+  onDelete?: (id: string) => void;
+}
+
+export function FunctionCard({ fn, onDelete }: Props) {
   const { lang } = useLang();
   const typeLabel = functionTypeLabels[fn.type]?.[lang] ?? fn.type;
 
@@ -28,6 +34,16 @@ export function FunctionCard({ fn }: { fn: IFunction }) {
                 </Badge>
               </div>
             </div>
+            {onDelete && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7 text-gray-300 hover:text-red-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(fn._id); }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="space-y-2 pt-0">

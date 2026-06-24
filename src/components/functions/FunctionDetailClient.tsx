@@ -11,8 +11,13 @@ import { formatCurrency, formatDate, functionTypeIcons } from '@/lib/utils';
 import type { IFunction, IMoiEntry } from '@/types';
 import type { MoiEntryInput } from '@/lib/validations';
 import { toast } from 'sonner';
-import { ArrowLeft, Pencil, CalendarDays, MapPin, IndianRupee, Users, FileDown } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, CalendarDays, MapPin, IndianRupee, Users, FileDown } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
+} from '@/components/ui/dialog';
 
 interface Props {
   fn: IFunction;
@@ -21,13 +26,29 @@ interface Props {
 
 export function FunctionDetailClient({ fn, initialEntries }: Props) {
   const { lang } = useLang();
+  const router = useRouter();
   const [entries, setEntries] = useState<IMoiEntry[]>(initialEntries);
   const [adding, setAdding] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const refreshEntries = useCallback(async () => {
     const res = await fetch(`/api/moi?functionId=${fn._id}`);
     if (res.ok) setEntries(await res.json());
   }, [fn._id]);
+
+  const handleDeleteFunction = async () => {
+    setDeleting(true);
+    const res = await fetch(`/api/functions/${fn._id}`, { method: 'DELETE' });
+    setDeleting(false);
+    if (res.ok) {
+      toast.success('Function deleted');
+      router.push('/dashboard/functions');
+    } else {
+      toast.error('Failed to delete function');
+      setConfirmDelete(false);
+    }
+  };
 
   const handleAdd = async (data: MoiEntryInput) => {
     setAdding(true);
@@ -57,11 +78,21 @@ export function FunctionDetailClient({ fn, initialEntries }: Props) {
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
         </Link>
-        <Link href={`/dashboard/functions/${fn._id}/edit`}>
-          <Button variant="outline" size="sm" className="gap-1">
-            <Pencil className="h-4 w-4" /> {t('edit', lang)}
+        <div className="flex items-center gap-2">
+          <Link href={`/dashboard/functions/${fn._id}/edit`}>
+            <Button variant="outline" size="sm" className="gap-1">
+              <Pencil className="h-4 w-4" /> {t('edit', lang)}
+            </Button>
+          </Link>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-gray-400 hover:text-red-500"
+            onClick={() => setConfirmDelete(true)}
+          >
+            <Trash2 className="h-4 w-4" />
           </Button>
-        </Link>
+        </div>
       </div>
 
       {/* Info card */}
@@ -120,6 +151,25 @@ export function FunctionDetailClient({ fn, initialEntries }: Props) {
           <MoiForm onSubmit={handleAdd} loading={adding} />
         </CardContent>
       </Card>
+
+      <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Function</DialogTitle>
+            <DialogDescription>
+              This will delete <strong>{fn.title}</strong> and all its Moi entries. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmDelete(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteFunction} disabled={deleting}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Entries list */}
       <Card>

@@ -32,6 +32,7 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [confirmRepaidEntry, setConfirmRepaidEntry] = useState<IMoiEntry | null>(null);
   const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const filtered = entries.filter(
@@ -170,7 +171,7 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
                             ? 'h-7 w-7 text-green-500 hover:text-orange-400'
                             : 'h-7 w-7 text-gray-400 hover:text-green-500'
                         }
-                        onClick={() => handleToggleStatus(entry)}
+                        onClick={() => entry.status === 'repaid' ? handleToggleStatus(entry) : setConfirmRepaidEntry(entry)}
                         disabled={togglingId === entry._id}
                       >
                         {entry.status === 'repaid'
@@ -230,6 +231,34 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
               disabled={!!deletingId}
             >
               Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!confirmRepaidEntry} onOpenChange={() => setConfirmRepaidEntry(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>{t('markRepaid', lang)}</DialogTitle>
+            <DialogDescription>
+              Mark <span className="font-medium text-gray-900">{confirmRepaidEntry?.contributorName}</span> ({confirmRepaidEntry ? formatCurrency(confirmRepaidEntry.amount) : ''}) as repaid?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmRepaidEntry(null)}>
+              {t('cancel', lang)}
+            </Button>
+            <Button
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={togglingId === confirmRepaidEntry?._id}
+              onClick={() => {
+                if (confirmRepaidEntry) {
+                  handleToggleStatus(confirmRepaidEntry);
+                  setConfirmRepaidEntry(null);
+                }
+              }}
+            >
+              <CheckCircle2 className="h-4 w-4 mr-1" /> {t('markRepaid', lang)}
             </Button>
           </DialogFooter>
         </DialogContent>

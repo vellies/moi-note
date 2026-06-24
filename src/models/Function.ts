@@ -9,6 +9,7 @@ export interface FunctionDocument extends Document {
   venue: string;
   notes?: string;
   createdAt: Date;
+  deletedAt?: Date;
 }
 
 const FunctionSchema = new Schema<FunctionDocument>(
@@ -23,6 +24,7 @@ const FunctionSchema = new Schema<FunctionDocument>(
     date: { type: Date, required: true },
     venue: { type: String, required: true, trim: true },
     notes: { type: String, trim: true },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

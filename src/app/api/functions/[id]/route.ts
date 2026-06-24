@@ -57,7 +57,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const fn = await getFunction(id, session.user.id!, isAdmin);
   if (!fn) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
-  await fn.deleteOne();
-  await MoiEntry.deleteMany({ functionId: id });
+  await FunctionModel.findByIdAndUpdate(id, { deletedAt: new Date() });
+  await MoiEntry.updateMany({ functionId: id, deletedAt: null }, { deletedAt: new Date() });
   return NextResponse.json({ success: true });
 }
