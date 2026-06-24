@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
-import { Geist } from 'next/font/google';
+import { Inter } from 'next/font/google';
 import './globals.css';
 import { SessionProvider } from 'next-auth/react';
 import { LangProvider } from '@/contexts/LangContext';
 import { Toaster } from '@/components/ui/sonner';
 
-const geist = Geist({ subsets: ['latin'], variable: '--font-geist-sans' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'Moi Note – Manage Your Moi Collections',
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${geist.variable} h-full antialiased`}>
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
       <body className="min-h-full bg-gray-50 text-gray-900">
         <SessionProvider>
           <LangProvider>
