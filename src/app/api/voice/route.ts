@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import { auth } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -16,14 +16,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
   }
 
-  const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const whisperLang = lang.startsWith('ta') ? 'ta' : 'en';
+  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-  const transcription = await openai.audio.transcriptions.create({
-    file: audio,
-    model: 'whisper-1',
-    language: whisperLang,
-  });
+  const audioBuffer = await audio.arrayBuffer();
+  const base64Audio = Buffer.from(audioBuffer).toString('base64');
+  const mimeType = (audio.type || 'audio/webm') as 'audio/webm' | 'audio/mp4' | 'audio/ogg' | 'audio/wav';
 
-  return NextResponse.json({ text: transcription.text });
+  const prompt = lang.startsWith('ta')
+    ? 'இந்த ஆடியோவை தமிழில் மட்டும் எழுத்து வடிவில் மாற்றவும். வேறு எதுவும் சேர்க்காதீர்கள்.'
+    : 'Transcribe this audio in English. Return only the transcribed text, nothing else.';
+
+  const result = await model.generateContent([
+    { inlineData: { mimeType, data: base64Audio } },
+    prompt,
+  ]);
+
+  const text = result.response.text().trim();
+  return NextResponse.json({ text });
 }

@@ -6,7 +6,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle,
+  DialogDescription, DialogFooter,
+} from '@/components/ui/dialog';
 import { MoiForm } from './MoiForm';
 import { useLang } from '@/contexts/LangContext';
 import { t } from '@/lib/i18n';
@@ -14,7 +17,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import type { IMoiEntry } from '@/types';
 import type { MoiEntryInput } from '@/lib/validations';
 import { toast } from 'sonner';
-import { Pencil, Trash2, Search } from 'lucide-react';
+import { Pencil, Trash2, Search, RotateCcw, CheckCircle2 } from 'lucide-react';
 
 interface Props {
   entries: IMoiEntry[];
@@ -28,6 +31,8 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
   const [editEntry, setEditEntry] = useState<IMoiEntry | null>(null);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const filtered = entries.filter(
     (e) =>
@@ -54,10 +59,28 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this Moi entry?')) return;
-    setDeletingId(id);
-    const res = await fetch(`/api/moi/${id}`, { method: 'DELETE' });
+  const handleToggleStatus = async (entry: IMoiEntry) => {
+    const next = entry.status === 'repaid' ? 'pending' : 'repaid';
+    setTogglingId(entry._id);
+    const res = await fetch(`/api/moi/${entry._id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: next }),
+    });
+    setTogglingId(null);
+    if (res.ok) {
+      toast.success(next === 'repaid' ? 'Marked as repaid' : 'Marked as pending');
+      onRefresh();
+    } else {
+      toast.error('Failed to update status');
+    }
+  };
+
+  const handleDeleteConfirmed = async () => {
+    if (!confirmDeleteId) return;
+    setDeletingId(confirmDeleteId);
+    setConfirmDeleteId(null);
+    const res = await fetch(`/api/moi/${confirmDeleteId}`, { method: 'DELETE' });
     setDeletingId(null);
     if (res.ok) {
       toast.success('Entry deleted');
@@ -95,13 +118,14 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
               <TableHead>{t('amount', lang)}</TableHead>
               <TableHead className="hidden sm:table-cell">{t('paymentMode', lang)}</TableHead>
               <TableHead className="hidden lg:table-cell">{t('date', lang)}</TableHead>
+              <TableHead>{t('status', lang)}</TableHead>
               <TableHead className="w-20">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="text-center py-8 text-gray-400">
+                <TableCell colSpan={9} className="text-center py-8 text-gray-400">
                   No entries found
                 </TableCell>
               </TableRow>
@@ -124,7 +148,35 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
                     {formatDate(entry.createdAt)}
                   </TableCell>
                   <TableCell>
+                    <Badge
+                      className={
+                        entry.status === 'repaid'
+                          ? 'bg-green-100 text-green-700 border-green-200 text-xs'
+                          : 'bg-orange-100 text-orange-700 border-orange-200 text-xs'
+                      }
+                      variant="outline"
+                    >
+                      {t((entry.status ?? 'pending') as 'pending' | 'repaid', lang)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        title={entry.status === 'repaid' ? t('markPending', lang) : t('markRepaid', lang)}
+                        className={
+                          entry.status === 'repaid'
+                            ? 'h-7 w-7 text-green-500 hover:text-orange-400'
+                            : 'h-7 w-7 text-gray-400 hover:text-green-500'
+                        }
+                        onClick={() => handleToggleStatus(entry)}
+                        disabled={togglingId === entry._id}
+                      >
+                        {entry.status === 'repaid'
+                          ? <RotateCcw className="h-3.5 w-3.5" />
+                          : <CheckCircle2 className="h-3.5 w-3.5" />}
+                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"
@@ -137,7 +189,7 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-gray-400 hover:text-red-500"
-                        onClick={() => handleDelete(entry._id)}
+                        onClick={() => setConfirmDeleteId(entry._id)}
                         disabled={deletingId === entry._id}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -160,8 +212,31 @@ export function MoiTable({ entries, functionId, onRefresh }: Props) {
         </div>
       )}
 
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Delete Entry</DialogTitle>
+            <DialogDescription>
+              This entry will be removed. This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirmed}
+              disabled={!!deletingId}
+            >
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!editEntry} onOpenChange={() => setEditEntry(null)}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Moi Entry</DialogTitle>
           </DialogHeader>

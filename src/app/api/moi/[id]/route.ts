@@ -36,13 +36,37 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   return NextResponse.json(entry);
 }
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+  const { id } = await params;
+  const { status } = await req.json();
+  if (status !== 'pending' && status !== 'repaid') {
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  }
+
+  await connectDB();
+  const entry = await MoiEntry.findOneAndUpdate(
+    { _id: id, userId: session.user.id, deletedAt: null },
+    { status },
+    { new: true }
+  );
+  if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  return NextResponse.json(entry);
+}
+
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   const { id } = await params;
   await connectDB();
-  const entry = await MoiEntry.findOneAndDelete({ _id: id, userId: session.user.id });
+  const entry = await MoiEntry.findOneAndUpdate(
+    { _id: id, userId: session.user.id, deletedAt: null },
+    { deletedAt: new Date() },
+    { new: true }
+  );
   if (!entry) return NextResponse.json({ error: 'Not found' }, { status: 404 });
   return NextResponse.json({ success: true });
 }

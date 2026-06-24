@@ -10,6 +10,8 @@ export type FunctionType =
 
 export type PaymentMode = 'Cash' | 'UPI' | 'Card' | 'Cheque';
 
+export type MoiStatus = 'pending' | 'repaid';
+
 export interface IUser {
   _id: string;
   name: string;
@@ -41,6 +43,7 @@ export interface IMoiEntry {
   amount: number;
   paymentMode: PaymentMode;
   notes?: string;
+  status: MoiStatus;
   createdAt: string;
 }
 

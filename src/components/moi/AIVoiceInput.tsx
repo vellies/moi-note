@@ -46,7 +46,7 @@ export function AIVoiceInput({ lang, onResult, className }: Props) {
           if (data.text) onResult(data.text);
           else toast.error('No speech detected');
         } catch {
-          toast.error('AI transcription failed — check OPENAI_API_KEY in .env.local');
+          toast.error('AI transcription failed — check GEMINI_API_KEY in .env.local');
         } finally {
           setLoading(false);
         }

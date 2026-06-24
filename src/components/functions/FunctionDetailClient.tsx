@@ -64,43 +64,47 @@ export function FunctionDetailClient({ fn, initialEntries }: Props) {
         </Link>
       </div>
 
-      {/* Info card — single row, always visible */}
+      {/* Info card */}
       <Card>
         <CardContent className="py-3 px-4">
-          <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-2xl shrink-0">{functionTypeIcons[fn.type]}</span>
-
-            {/* Left: title + meta */}
-            <div className="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-              <span className="font-bold text-gray-900 whitespace-nowrap">{fn.title}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3">
+            {/* Icon + title + badge */}
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-2xl shrink-0">{functionTypeIcons[fn.type]}</span>
+              <span className="font-bold text-gray-900 truncate">{fn.title}</span>
               <Badge className="bg-orange-100 text-orange-700 border-orange-200 text-xs shrink-0">
                 {typeLabel}
               </Badge>
+            </div>
+
+            {/* Date + venue */}
+            <div className="flex items-center gap-3 mt-1.5 sm:mt-0 sm:flex-1 min-w-0">
               <span className="flex items-center gap-1 text-sm text-gray-500 whitespace-nowrap">
                 <CalendarDays className="h-3.5 w-3.5" /> {formatDate(fn.date)}
               </span>
-              <span className="flex items-center gap-1 text-sm text-gray-500 whitespace-nowrap">
-                <MapPin className="h-3.5 w-3.5" /> {fn.venue}
+              <span className="flex items-center gap-1 text-sm text-gray-500 min-w-0">
+                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{fn.venue}</span>
               </span>
             </div>
 
-            {/* Right: stats + export */}
-            <div className="flex items-center gap-4 shrink-0 ml-auto">
-              <div className="flex items-center gap-1.5">
+            {/* Stats + export */}
+            <div className="flex items-center gap-3 mt-2 sm:mt-0 sm:ml-auto shrink-0 border-t sm:border-t-0 pt-2 sm:pt-0">
+              <div className="flex items-center gap-1">
                 <IndianRupee className="h-4 w-4 text-green-600" />
                 <span className="font-bold text-green-600 text-sm">{formatCurrency(total)}</span>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-gray-500">
+              <div className="flex items-center gap-1">
                 <Users className="h-4 w-4 text-blue-500" />
-                <span className="font-semibold text-gray-700">{entries.length}</span>
+                <span className="font-semibold text-gray-700 text-sm">{entries.length}</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <FileDown className="h-4 w-4 text-orange-400" />
+              <div className="flex items-center gap-1.5 text-xs border-l pl-3">
+                <FileDown className="h-3.5 w-3.5 text-orange-400" />
                 <a href={`/api/reports/excel?functionId=${fn._id}`}
-                  className="text-xs text-orange-500 hover:underline font-medium">Excel</a>
-                <span className="text-gray-300 text-xs">|</span>
+                  className="text-orange-500 hover:underline font-medium">Excel</a>
+                <span className="text-gray-300">|</span>
                 <a href={`/api/reports/pdf?functionId=${fn._id}`}
-                  className="text-xs text-orange-500 hover:underline font-medium">PDF</a>
+                  className="text-orange-500 hover:underline font-medium">PDF</a>
               </div>
             </div>
           </div>
@@ -109,9 +113,9 @@ export function FunctionDetailClient({ fn, initialEntries }: Props) {
 
       {/* Add Moi form */}
       <Card>
-        <CardHeader className="pb-3">
+        {/* <CardHeader className="pb-3">
           <CardTitle className="text-base">{t('addMoi', lang)}</CardTitle>
-        </CardHeader>
+        </CardHeader> */}
         <CardContent>
           <MoiForm onSubmit={handleAdd} loading={adding} />
         </CardContent>

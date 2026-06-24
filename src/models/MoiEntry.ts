@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from 'mongoose';
-import type { PaymentMode } from '@/types';
+import type { PaymentMode, MoiStatus } from '@/types';
 
 export interface MoiEntryDocument extends Document {
   functionId: Types.ObjectId;
@@ -10,7 +10,9 @@ export interface MoiEntryDocument extends Document {
   amount: number;
   paymentMode: PaymentMode;
   notes?: string;
+  status: MoiStatus;
   createdAt: Date;
+  deletedAt?: Date;
 }
 
 const MoiEntrySchema = new Schema<MoiEntryDocument>(
@@ -23,6 +25,8 @@ const MoiEntrySchema = new Schema<MoiEntryDocument>(
     amount: { type: Number, required: true, min: 0 },
     paymentMode: { type: String, enum: ['Cash', 'UPI', 'Card', 'Cheque'], required: true },
     notes: { type: String, trim: true },
+    status: { type: String, enum: ['pending', 'repaid'], default: 'pending' },
+    deletedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
   if (!functionId) return NextResponse.json({ error: 'functionId required' }, { status: 400 });
 
   await connectDB();
-  const entries = await MoiEntry.find({ functionId }).sort({ createdAt: -1 }).lean();
+  const raw = await MoiEntry.find({ functionId, deletedAt: null }).sort({ createdAt: -1 }).lean();
+  const entries = raw.map((e) => ({ ...e, status: e.status ?? 'pending' }));
   return NextResponse.json(entries);
 }
 

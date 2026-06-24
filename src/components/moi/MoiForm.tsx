@@ -53,56 +53,71 @@ export function MoiForm({ defaultValues, onSubmit, loading, onCancel }: Props) {
 
   return (
     <form onSubmit={handleSubmit(wrappedSubmit)} className="space-y-2">
-      {/* Row 1: Name | Place | Mobile */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Row 1: Name | Place | Mobile — 1 col on mobile, 3 on sm+ */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {voiceInput('contributorName', 'e.g. Kumar', 'contributorName')}
         {voiceInput('place', 'e.g. Chennai', 'place')}
-        <div className="space-y-1">
+        <div className="space-y-1 sm:col-span-2 lg:col-span-1">
           <Label className="text-xs">{t('mobileNumber', lang)}</Label>
           <Input type="tel" placeholder="Mobile number" {...register('mobileNumber')} className="h-8 text-sm" />
           {errors.mobileNumber && <p className="text-xs text-red-500">{errors.mobileNumber.message}</p>}
         </div>
       </div>
 
-      {/* Row 2: Amount | Mode | Notes | Save — grid keeps labels & inputs aligned */}
-      <div className="grid grid-cols-[120px_140px_1fr_auto] gap-3 items-end">
-        <div className="space-y-1">
-          <Label className="text-xs">{t('amount', lang)}</Label>
-          <Input type="number" min={0} placeholder="₹ Amount" {...register('amount')} className="h-8 text-sm" />
-          {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
-        </div>
+      {/* Row 2: Amount+Mode | Notes | Buttons */}
+      <div className="space-y-2 lg:space-y-0 lg:grid lg:grid-cols-[140px_140px_1fr_auto] lg:gap-3 lg:items-end">
+        {/* Amount + Mode: side by side on all sizes, individual cells on lg */}
+        <div className="grid grid-cols-2 gap-3 lg:contents">
+          <div className="space-y-1 min-w-0">
+            <Label className="text-xs">{t('amount', lang)}</Label>
+            <div className="relative flex items-center">
+              <Input type="number" min={0} placeholder="₹ Amount" {...register('amount')} className="pr-16 h-9 text-sm" />
+              <div className="absolute right-1 flex items-center gap-0">
+                <VoiceInput lang={voiceLang} onResult={(text) => {
+                  const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+                  if (!isNaN(num)) setValue('amount', num as never);
+                }} />
+                <AIVoiceInput lang={voiceLang} onResult={(text) => {
+                  const num = parseFloat(text.replace(/[^0-9.]/g, ''));
+                  if (!isNaN(num)) setValue('amount', num as never);
+                }} />
+              </div>
+            </div>
+            {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
+          </div>
 
-        <div className="space-y-1">
-          <Label className="text-xs">{t('paymentMode', lang)}</Label>
-          <Select onValueChange={(v: string | null) => { if (v) setValue('paymentMode', v as MoiEntryInput['paymentMode']); }} defaultValue={watch('paymentMode')}>
-            <SelectTrigger className="h-8 text-sm">
-              <SelectValue placeholder="Mode" />
-            </SelectTrigger>
-            <SelectContent>
-              {PAYMENT_MODES.map((mode) => (
-                <SelectItem key={mode} value={mode}>
-                  {paymentModeLabels[mode]?.[lang] ?? mode}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {errors.paymentMode && <p className="text-xs text-red-500">{errors.paymentMode.message}</p>}
+          <div className="space-y-1">
+            <Label className="text-xs">{t('paymentMode', lang)}</Label>
+            <Select onValueChange={(v: string | null) => { if (v) setValue('paymentMode', v as MoiEntryInput['paymentMode']); }} defaultValue={watch('paymentMode')}>
+              <SelectTrigger className="h-9 text-sm">
+                <SelectValue placeholder="Mode" />
+              </SelectTrigger>
+              <SelectContent>
+                {PAYMENT_MODES.map((mode) => (
+                  <SelectItem key={mode} value={mode}>
+                    {paymentModeLabels[mode]?.[lang] ?? mode}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.paymentMode && <p className="text-xs text-red-500">{errors.paymentMode.message}</p>}
+          </div>
         </div>
 
         <div className="space-y-1">
           <Label className="text-xs">{t('notes', lang)}</Label>
-          <Input placeholder="Notes (optional)" {...register('notes')} className="h-8 text-sm" />
+          <Input placeholder="Notes (optional)" {...register('notes')} className="h-9 text-sm" />
         </div>
 
         <div className="flex gap-2">
           {onCancel && (
-            <Button type="button" variant="outline" onClick={onCancel} className="h-8 text-sm px-3">
+            <Button type="button" variant="outline" onClick={onCancel} className="flex-1 lg:flex-none h-9 text-sm px-3">
               {t('cancel', lang)}
             </Button>
           )}
-          <Button type="submit" className="h-8 text-sm px-5 bg-orange-500 hover:bg-orange-600" disabled={loading}>
+          <Button type="submit" className="flex-1 lg:flex-none h-9 text-sm px-5 bg-orange-500 hover:bg-orange-600" disabled={loading}>
             {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-            {t('save', lang)}
+            {t(defaultValues ? 'update' : 'add', lang)}
           </Button>
         </div>
       </div>

@@ -8,6 +8,8 @@ export const labels = {
   paymentMode: { en: 'Payment Mode', ta: 'பணம் செலுத்தும் முறை' },
   notes: { en: 'Notes', ta: 'குறிப்புகள்' },
   save: { en: 'Save', ta: 'சேமி' },
+  add: { en: 'Add', ta: 'சேர்' },
+  update: { en: 'Update', ta: 'புதுப்பி' },
   cancel: { en: 'Cancel', ta: 'ரத்து' },
   addMoi: { en: 'Add Moi', ta: 'மொய் சேர்' },
   search: { en: 'Search', ta: 'தேடு' },
@@ -32,6 +34,11 @@ export const labels = {
   password: { en: 'Password', ta: 'கடவுச்சொல்' },
   edit: { en: 'Edit', ta: 'திருத்து' },
   delete: { en: 'Delete', ta: 'நீக்கு' },
+  status: { en: 'Status', ta: 'நிலை' },
+  pending: { en: 'Pending', ta: 'நிலுவை' },
+  repaid: { en: 'Repaid', ta: 'திருப்பி செலுத்தியது' },
+  markRepaid: { en: 'Mark as Repaid', ta: 'திருப்பி செலுத்தியதாக குறி' },
+  markPending: { en: 'Mark as Pending', ta: 'நிலுவையாக குறி' },
 } as const;
 
 export type LabelKey = keyof typeof labels;
